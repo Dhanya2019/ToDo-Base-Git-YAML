@@ -30,7 +30,7 @@ steps:
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet build $(buildConfiguration)'
-    inputs:
+  inputs:
     command: 'build'
     arguments: '--no-restore --configuration $(buildConfiguration)'
     projects: '**/*.csproj'
