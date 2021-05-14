@@ -4,7 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
-- master
+- '*'
 
 pool:
   vmImage: ubuntu-latest
@@ -13,5 +13,25 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-- script: dotnet build --configuration $(buildConfiguration)
+- task: UseDotNet@2
+  displayName: 'Use .NET Core SDK 5.0'
+  inputs:
+    packageType: sdk
+    version: 5.0.203
+    
+- script: echo "Zebra Build Info -> $(Build.DefinitionName), $(Build.BuildId), $(Build.BuildNumber)"
+  displayName: 'Write build info'
+  
+- task: DotNetCoreCLI@2
+  displayName: 'Restore project dependencies'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
   displayName: 'dotnet build $(buildConfiguration)'
+    inputs:
+    command: 'build'
+    arguments: '--no-restore --configuration $(buildConfiguration)'
+    projects: '**/*.csproj'
+  
