@@ -1,0 +1,6 @@
+*.bak
+**/bin
+**/obj
+*.csproj.user
+notes.txt
+**/.vs
