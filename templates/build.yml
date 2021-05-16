@@ -10,6 +10,13 @@ steps:
     projects: '**/*.csproj'
     
 - task: DotNetCoreCLI@2
+  displayName: 'Install .NET Core tools from local manifest'
+  inputs:
+    command: custom
+    custom: tool
+    arguments: 'restore'
+    
+- task: DotNetCoreCLI@2
   displayName: 'Run unit tests - ${{ parameters.buildConfiguration }}'
   inputs:
     command: 'test'
