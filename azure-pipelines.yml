@@ -36,6 +36,9 @@ steps:
     custom: tool
     arguments: 'restore'
 
+- script: echo "Print Source Directory -> $(Build.SourcesDirectory)"
+  displayName: 'Write build info'
+  
 - task: DotNetCoreCLI@2
   displayName: 'Run unit tests - $(buildConfiguration)'
   inputs:
