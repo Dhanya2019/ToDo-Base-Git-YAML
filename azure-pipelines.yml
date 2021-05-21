@@ -94,6 +94,6 @@ stages:
           - task: AzureWebApp@1
             displayName: 'Azure App Service Deploy: website'
             inputs:
-              azureSubscription: 'ResourceManager-ToDo-SVCConnection'
-              appName: '$(ToDoAppServiceName)'
+              azureSubscription: 'ToDo-WebApp-AppService'
+              appName: '$(ToDo-WebApp-AppService)'
               package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
