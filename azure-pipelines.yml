@@ -62,7 +62,7 @@ stages:
       displayName: 'Publish the project - $(buildConfiguration)'
       inputs:
         command: 'publish'
-        projects: '**/ToDo-Base.csproj'
+        projects: '**/*.csproj'
         publishWebProjects: false
         arguments: '--no-build --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
         zipAfterPublish: true
@@ -96,4 +96,4 @@ stages:
             inputs:
               azureSubscription: 'ResourceManager-ToDo-SVCConnection' #This  is Service Connection created under pjt settings-pipelines-Service connections
               appName: '$(WebAppName)' #This variable(created under pipeline-lib, contain the app service name created in azure portal
-              package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
+              package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/ToDo-Base.zip'
