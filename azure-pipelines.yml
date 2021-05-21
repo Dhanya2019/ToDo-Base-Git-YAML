@@ -6,59 +6,70 @@
 trigger:
 - '*'
 
-pool:
-  vmImage: ubuntu-latest
-
 variables:
   buildConfiguration: 'Release'
-  dotnetSdkVersion: '5.0.203'
 
-steps:
-- task: UseDotNet@2
-  displayName: 'Use .NET Core SDK 5.0'
-  inputs:
-    packageType: sdk
-    version: '$(dotnetSdkVersion)'
+stages:
+- stage: 'Build'
+  displayName: 'Building the TODo-GIT-YAML web application'
+  jobs: 
+  - job: 'Build'
+    displayName: 'Build job for TODo-GIT-YAML web app'
+    pool:
+      vmImage: 'ubuntu-latest'
+ 
+    variables:
+      dotnetSdkVersion: '5.0.203'
+  
+  
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Use .NET Core SDK 5.0'
+      inputs:
+          packageType: sdk
+          version: '$(dotnetSdkVersion)'
     
-- script: echo "Zebra Build Info -> $(Build.DefinitionName), $(Build.BuildId), $(Build.BuildNumber)"
-  displayName: 'Write build info'
+    - script: echo "Zebra Build Info -> $(Build.DefinitionName), $(Build.BuildId), $(Build.BuildNumber)"
+      displayName: 'Write build info'
   
-- task: DotNetCoreCLI@2
-  displayName: 'Restore project dependencies'
-  inputs:
-    command: 'restore'
-    projects: '**/*.csproj'
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore project dependencies'
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
 
 
-- script: echo "Print Source Directory -> $(Build.SourcesDirectory)"
-  displayName: 'Write build info'
+    - script: echo "Print Build.SourcesDirectory -> $(Build.SourcesDirectory)"
+      displayName: 'Write build info'
   
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet build $(buildConfiguration)'
-  inputs:
-    command: 'build'
-    arguments: '--no-restore --configuration $(buildConfiguration)'
-    projects: '**/*.csproj'
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet build $(buildConfiguration)'
+      inputs:
+        command: 'build'
+        arguments: '--no-restore --configuration $(buildConfiguration)'
+        projects: '**/*.csproj'
 
-- task: DotNetCoreCLI@2
-  displayName: 'Publish the project - Release'
-  inputs:
-    command: 'publish'
-    projects: '**/*.csproj'
-    publishWebProjects: false
-    arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
-    zipAfterPublish: true
+    - task: DotNetCoreCLI@2
+      displayName: 'Publish the project - Release'
+      inputs:
+        command: 'publish'
+        projects: '**/*.csproj'
+        publishWebProjects: false
+        arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
+        zipAfterPublish: true
   
+    - task: DotNetCoreCLI@2
+      displayName: 'Publish the project - $(buildConfiguration)'
+      inputs:
+        command: 'publish'
+        projects: '**/*.csproj'
+        publishWebProjects: false
+        arguments: '--no-build --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
+        zipAfterPublish: true
 
-- task: DotNetCoreCLI@2
-  displayName: 'Publish the project - $(buildConfiguration)'
-  inputs:
-    command: 'publish'
-    projects: '**/*.csproj'
-    publishWebProjects: false
-    arguments: '--no-build --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
-    zipAfterPublish: true
-
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: drop'
-  condition: succeeded()
+    - script: echo "Print Build.ArtifactStagingDirectory -> $(Build.ArtifactStagingDirectory)"
+      displayName: 'Write build info'
+      
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: drop'
+      condition: succeeded()
