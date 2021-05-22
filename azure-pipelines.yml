@@ -8,6 +8,7 @@ trigger:
 
 variables:
   buildConfiguration: 'Release'
+  releaseBranchName: 'build-pipeline'
 
 stages:
 - stage: 'Build'
@@ -23,6 +24,10 @@ stages:
   
   
     steps:
+    
+    - script: echo Hello, Starting the build pipeline!
+      condition: always()
+    
     - task: UseDotNet@2
       displayName: 'Use .NET Core SDK 5.0'
       inputs:
@@ -49,17 +54,17 @@ stages:
         arguments: '--no-restore --configuration $(buildConfiguration)'
         projects: '**/*.csproj'
 
-    - task: DotNetCoreCLI@2
-      displayName: 'Publish the project - Release'
-      inputs:
-        command: 'publish'
-        projects: '**/*.csproj'
-        publishWebProjects: false
-        arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
-        zipAfterPublish: true
+    # - task: DotNetCoreCLI@2
+      # displayName: 'Publish the project - Release'
+      # inputs:
+        # command: 'publish'
+        # projects: '**/*.csproj'
+        # publishWebProjects: false
+        # arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
+        # zipAfterPublish: true
   
     - task: DotNetCoreCLI@2
-      displayName: 'Publish the project - $(buildConfiguration)'
+      displayName: 'Prepare the publish project package- $(buildConfiguration)'
       inputs:
         command: 'publish'
         projects: '**/*.csproj'
@@ -68,16 +73,22 @@ stages:
         zipAfterPublish: true
 
     - script: echo "Print Build.ArtifactStagingDirectory -> $(Build.ArtifactStagingDirectory)"
-      displayName: 'Write build info'
+      displayName: 'Write build Artifacts'
       
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: drop'
       condition: succeeded()
       
       
-- stage: 'Deploy'
-  displayName: 'Deploy the TODO web application'
+- stage: 'Dev'
+  displayName: 'Deploy to the dev environment'
   dependsOn: Build
+  condition: |
+    and
+    (
+      succeeded(),
+      eq(variables['Build.SourceBranchName'], variables['releaseBranchName'])
+    )
   jobs:
   - deployment: Deploy
     pool:
@@ -95,5 +106,11 @@ stages:
             displayName: 'Azure App Service Deploy: website'
             inputs:
               azureSubscription: 'ResourceManager-ToDo-SVCConnection' # This  is Service Connection created under pjt settings-pipelines-Service connections
-              appName: '$(WebAppName)' # This variable(created under pipeline-lib, contain the app service name created in azure portal
+              appName: '$(WebAppNameDev)' # This variable(created under pipeline-lib, contain the app service name created in azure portal
               package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/ToDo-Base.zip'
+              
+              
+              
+              
+#URL : https://todo-webapp-appservice.azurewebsites.net/WeatherForecast
+#URL : https://todo-webapp-appservice.azurewebsites.net/api/TodoItems
