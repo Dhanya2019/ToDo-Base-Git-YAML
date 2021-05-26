@@ -5,13 +5,79 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using TodoApi.Models;
+using TodoItemMgmt.Models;
 
 namespace ToDo_Base.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class TodoItemsController : ControllerBase
+    {
+        private readonly ITodoItemRepository todoItemRepository;
+        private readonly ILogger<TodoItemsController> Logger;
+
+        public TodoItemsController(ITodoItemRepository todoItemRepository,
+            ILogger<TodoItemsController> iLog)
+        {
+            this.todoItemRepository = todoItemRepository;
+            this.Logger = iLog;
+        }
+        [HttpGet]
+        public List<TodoItem> GetTodoItems()
+        {
+            return todoItemRepository.GetAllTodoItems().ToList();
+        }
+
+        // GET: api/TodoItems/5
+        [HttpGet("{id}")]
+        public TodoItem GetTodoItem(long id)
+        {
+            var todoItem = todoItemRepository.GetTodoItem(id);
+
+          /*  if (todoItem == null)
+            {
+                return NotFound();
+            }*/
+
+            return todoItem;
+        }
+
+        // PUT: api/TodoItems/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public TodoItem PutTodoItem(long id, TodoItem todoItem)
+        {
+            if (id != todoItem.Id)
+            {
+              //  return BadRequest();
+            }
+           return  todoItemRepository.Update(todoItem);
+
+        }
+
+        // POST: api/TodoItems
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public TodoItem PostTodoItem(TodoItem todoItem)
+        {
+           return  todoItemRepository.Add(todoItem);
+        }
+
+        // DELETE: api/TodoItems/5
+        [HttpDelete("{id}")]
+        public TodoItem DeleteTodoItem(long id)
+        {
+            return todoItemRepository.Delete(id);
+        }
+
+        private bool TodoItemExists(long id)
+        {
+            return (todoItemRepository.GetTodoItem(id) != null);
+        }
+    }
+    /*public class TodoItemsController : ControllerBase
     {
         private readonly TodoDBContext _context;
 
@@ -103,5 +169,5 @@ namespace ToDo_Base.Controllers
         {
             return _context.TodoItems.Any(e => e.Id == id);
         }
-    }
+    }*/
 }

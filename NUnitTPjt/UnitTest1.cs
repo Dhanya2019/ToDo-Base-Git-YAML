@@ -1,5 +1,7 @@
+using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using System;
+using ToDo_Base.Controllers;
 
 namespace NUnitTPjt
 {

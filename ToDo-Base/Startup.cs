@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TodoApi.Models;
+using TodoItemMgmt.Models;
 
 namespace ToDo_Base
 {
@@ -32,10 +33,18 @@ namespace ToDo_Base
             services.AddControllers();
             services.AddDbContextPool<TodoDBContext>(
                             options => options.UseSqlServer(Configuration.GetConnectionString("ToDoDBConnection")));
+
+            //Mock DB
+            //services.AddSingleton<ITodoItemRepository, MockTodoItemRepository>();
+            //DB- Now SQL
+            services.AddScoped<ITodoItemRepository, SQLTodoItemRepository>();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ToDo_Base", Version = "v1" });
             });
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,0 +1,124 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- '*'
+
+variables:
+  buildConfiguration: 'Release'
+  releaseBranchName: 'build-pipeline'
+
+schedules:
+- cron: '0 3 * * *'
+  displayName: Deploy every day at 3 A.M.
+  branches:
+    include:
+    - build-pipeline
+  always: false 
+  
+stages:
+- stage: 'Build'
+  displayName: 'Building the TODo-GIT-YAML web application'
+  jobs: 
+  - job: 'Build'
+    displayName: 'Build job for TODo-GIT-YAML web app'
+    pool:
+      vmImage: 'ubuntu-latest'
+ 
+    variables:
+      dotnetSdkVersion: '5.0.203'
+  
+  
+    steps:
+    
+    - script: echo Hello, Starting the build pipeline!
+      condition: always()
+    
+    - task: UseDotNet@2
+      displayName: 'Use .NET Core SDK 5.0'
+      inputs:
+          packageType: sdk
+          version: '$(dotnetSdkVersion)'
+    
+    - script: echo "Zebra Build Info -> $(Build.DefinitionName), $(Build.BuildId), $(Build.BuildNumber)"
+      displayName: 'Write build info'
+  
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore project dependencies'
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+
+
+    - script: echo "Print Build.SourcesDirectory -> $(Build.SourcesDirectory)"
+      displayName: 'Write build info'
+  
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet build $(buildConfiguration)'
+      inputs:
+        command: 'build'
+        arguments: '--no-restore --configuration $(buildConfiguration)'
+        projects: '**/*.csproj'
+
+    # - task: DotNetCoreCLI@2
+      # displayName: 'Publish the project - Release'
+      # inputs:
+        # command: 'publish'
+        # projects: '**/*.csproj'
+        # publishWebProjects: false
+        # arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
+        # zipAfterPublish: true
+  
+    - task: DotNetCoreCLI@2
+      displayName: 'Prepare the publish project package- $(buildConfiguration)'
+      inputs:
+        command: 'publish'
+        projects: '**/*.csproj'
+        publishWebProjects: false
+        arguments: '--no-build --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
+        zipAfterPublish: true
+
+    - script: echo "Print Build.ArtifactStagingDirectory -> $(Build.ArtifactStagingDirectory)"
+      displayName: 'Write build Artifacts'
+      
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: drop'
+      condition: succeeded()
+      
+      
+- stage: 'Dev'
+  displayName: 'Deploy to the dev environment'
+  dependsOn: Build
+  condition: |
+    and
+    (
+      succeeded(),
+      eq(variables['Build.SourceBranchName'], variables['releaseBranchName'])
+    )
+  jobs:
+  - deployment: Deploy
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: dev
+    variables:
+    - group: Release
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: drop
+          - task: AzureWebApp@1
+            displayName: 'Azure App Service Deploy: ToDoDEV'
+            inputs:
+              azureSubscription: 'ResourceManager-ToDo-SVCConnection' # This  is Service Connection created under pjt settings-pipelines-Service connections
+              appName: '$(WebAppNameDev)' # This variable(created under pipeline-lib, contain the app service name created in azure portal
+              package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/ToDo-Base.zip'
+              
+              
+              
+              
+#URL : https://todo-webapp-appservice.azurewebsites.net/WeatherForecast
+#URL : https://todo-webapp-appservice.azurewebsites.net/api/TodoItems

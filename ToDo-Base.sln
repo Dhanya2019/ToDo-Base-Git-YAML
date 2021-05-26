@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ToDo-Base", "ToDo-Base\ToDo-Base.csproj", "{3D9B9AC2-CA08-4545-A638-040C4AEC37B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnitTPjt", "NUnitTPjt\NUnitTPjt.csproj", "{C930AB60-0665-498C-81D5-BC02904F2F4A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NUnitTPjt", "NUnitTPjt\NUnitTPjt.csproj", "{C930AB60-0665-498C-81D5-BC02904F2F4A}"
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "ToDODatabase", "ToDODatabase\ToDODatabase.sqlproj", "{9C858BC8-DAD6-46EA-BC98-94A8C9E6F5B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,12 @@ Global
 		{C930AB60-0665-498C-81D5-BC02904F2F4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C930AB60-0665-498C-81D5-BC02904F2F4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C930AB60-0665-498C-81D5-BC02904F2F4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C858BC8-DAD6-46EA-BC98-94A8C9E6F5B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C858BC8-DAD6-46EA-BC98-94A8C9E6F5B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C858BC8-DAD6-46EA-BC98-94A8C9E6F5B8}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{9C858BC8-DAD6-46EA-BC98-94A8C9E6F5B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C858BC8-DAD6-46EA-BC98-94A8C9E6F5B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C858BC8-DAD6-46EA-BC98-94A8C9E6F5B8}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

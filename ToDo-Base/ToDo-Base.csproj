@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>ToDo_Base</RootNamespace>
+    <UserSecretsId>fdf7f46d-19d2-43f9-9f09-6c49ac52728c</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
