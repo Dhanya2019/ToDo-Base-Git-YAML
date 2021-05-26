@@ -155,6 +155,12 @@ stages:
                 contents: |
                     d:\a\1\s\GeneratedOutputFiles\$(databasename)_Script.sql
                 targetFolder: '$(Build.StagingDirectory)'
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Artifact'
+            inputs:
+                pathToPublish: '$(Build.ArtifactStagingDirectory)'
+                artifactName: changeScript
+            condition: succeededOrFailed()  
 
 - stage: DBAVerificationApply
   displayName: 'Apply database schema changes'
