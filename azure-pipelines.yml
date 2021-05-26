@@ -149,6 +149,12 @@ stages:
               script: | 
                 Write-Host "Auto Generated SQL Update Script:"
                 Get-Content d:\a\1\s\GeneratedOutputFiles\$(databasename)_Script.sql | foreach {Write-Output $_}
+          - task: CopyFiles@2
+            displayName: 'Copy Change SCript to staging directory'
+            inputs:
+                contents: |
+                    d:\a\1\s\GeneratedOutputFiles\$(databasename)_Script.sql
+                targetFolder: '$(Build.StagingDirectory)'
 
 - stage: DBAVerificationApply
   displayName: 'Apply database schema changes'
