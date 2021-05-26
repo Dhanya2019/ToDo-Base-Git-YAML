@@ -248,15 +248,7 @@ stages:
      
 - stage: 'Dev'
   displayName: 'Deploy to the dev environment'
-  #dependsOn: DBAVerificationApply
-  # dependsOn: Build
-  # condition: |
-    # and
-    # (
-      # succeeded(),
-      # eq(variables['Build.SourceBranchName'], variables['releaseBranchName'])
-    # )
-   dependsOn: 
+  dependsOn:
   - DBAVerificationScript
   - DBAVerificationApply
   condition: |
