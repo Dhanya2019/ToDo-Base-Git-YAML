@@ -140,7 +140,7 @@ stages:
               # sqlPassword: 'Ivanti@201718'
               deployType: 'DacpacTask'
               deploymentAction: 'Script'
-              dacpacFile: '$(Pipeline.Workspace)/dropDacpac/ToDODatabase/bin/Release/ToDODatabase.dacpac'
+              dacpacFile: '$(Pipeline.Workspace)/dropDacpac/ToDODatabase/bin/Debug/ToDODatabase.dacpac'
               ipDetectionMethod: 'AutoDetect'
           - task: PowerShell@2
             displayName: Show Auto Generated SQL Script
@@ -178,7 +178,7 @@ stages:
               sqlPassword: '$(adminPassword)'
               deployType: 'DacpacTask'
               deploymentAction: 'Publish'
-              dacpacFile: '$(Pipeline.Workspace)/dropDacpac/ToDODatabase/bin/Release/ToDODatabase.dacpac'
+              dacpacFile: '$(Pipeline.Workspace)/dropDacpac/ToDODatabase/bin/Debug/ToDODatabase.dacpac'
               ipDetectionMethod: 'AutoDetect'
 
 
