@@ -134,10 +134,6 @@ stages:
               databaseName: '$(databasename)'
               sqlUsername: '$(adminlogin)'
               sqlPassword: '$(adminPassword)'
-              # serverName: 'todosqlserver.database.windows.net'
-              # databaseName: 'ToDo-New'
-              # sqlUsername: 'dhanya'
-              # sqlPassword: 'Ivanti@201718'
               deployType: 'DacpacTask'
               deploymentAction: 'Script'
               dacpacFile: '$(Pipeline.Workspace)/dropDacpac/ToDODatabase/bin/Debug/ToDODatabase.dacpac'
@@ -149,22 +145,55 @@ stages:
               script: | 
                 Write-Host "Auto Generated SQL Update Script:"
                 Get-Content d:\a\1\s\GeneratedOutputFiles\$(databasename)_Script.sql | foreach {Write-Output $_}
-          - task: CopyFiles@2
-            displayName: 'Copy Change SCript to staging directory'
+                
+          - task: PowerShell@2
+            displayName: Show change script and check for schema changes
             inputs:
-                contents: |
-                    d:\a\1\s\GeneratedOutputFiles\$(databasename)_Script.sql
-                targetFolder: '$(Build.StagingDirectory)'
-          - task: PublishBuildArtifacts@1
-            displayName: 'Publish Artifact'
-            inputs:
-                pathToPublish: '$(Build.ArtifactStagingDirectory)'
-                artifactName: changeScript
-            condition: succeededOrFailed()  
+              targetType: 'inline'
+              script: | 
+                # Print the schema change script
+                Write-Host "Auto Generated SQL Update Script:"
+                Get-Content d:\a\1\s\GeneratedOutputFiles\$(databasename)_Script.sql | foreach {Write-Output $_}
+
+                # Check for schema changes
+                $file = Get-Content "d:\a\1\s\GeneratedOutputFiles\$(databasename)_Script.sql"
+                $containsWord = $file | %{$_ -match "CREATE" -or $_ -match "ALTER" -or $_ -match "DROP"}
+                if ($containsWord -contains $true) {
+                  Install-Module VSTeam -Scope CurrentUser -Force
+                  Set-VSTeamAccount –Account $(Acct) -PersonalAccessToken $(PAT)
+                  $methodParameters = @{
+                    ProjectName = "$(System.TeamProject)"
+                    Name = "Release"}
+                  $vg = Get-VSTeamVariableGroup @methodParameters
+                  $vars = @{}
+                  $vg.variables | Get-Member -MemberType *Property | %{$vars.($_.Name) = $vg.variables.($_.Name)}
+                  $varName = "schemaChanged"
+                  $vars.$varName= @{}
+                  $vars.$varName.value = "True"
+                  $vars.$varName.isSecret = $false
+                  $methodParameters = @{
+                    id = $vg.id
+                    ProjectName = "$(System.TeamProject)"
+                    Name = "Release"
+                    Description = ""
+                    Type = "Vsts"
+                    Variables = $vars}
+                  Update-VSTeamVariableGroup @methodParameters} 
+          # - task: CopyFiles@2
+            # displayName: 'Copy Change SCript to staging directory'
+            # inputs:
+                # contents: |
+                    # d:\a\1\s\GeneratedOutputFiles\$(databasename)_Script.sql
+                # targetFolder: '$(Build.StagingDirectory)'
 
 - stage: DBAVerificationApply
+  # displayName: 'Apply database schema changes'
+  # dependsOn: DBAVerificationScript
+  variables: 
+    - group: 'Release'
   displayName: 'Apply database schema changes'
   dependsOn: DBAVerificationScript
+  condition: and(succeeded('DBAVerificationScript'), eq(variables['schemaChanged'], True))
   jobs:
   - deployment: DBAVerificationApply
     pool:
@@ -192,20 +221,42 @@ stages:
               deploymentAction: 'Publish'
               dacpacFile: '$(Pipeline.Workspace)/dropDacpac/ToDODatabase/bin/Debug/ToDODatabase.dacpac'
               ipDetectionMethod: 'AutoDetect'
-
-
+###########################################################
+          - task: PowerShell@2
+            displayName: 'Remove "schemaChanged" pipeline variable'
+            inputs:
+              targetType: 'inline'
+              script: | 
+                Install-Module VSTeam -Scope CurrentUser -Force
+                Set-VSTeamAccount –Account $(Acct) -PersonalAccessToken $(PAT)
+                $methodParameters = @{
+                  ProjectName = "$(System.TeamProject)"
+                  Name = "Release"}
+                $vg = Get-VSTeamVariableGroup  @methodParameters 
+                $vars = @{}
+                $vg.variables | Get-Member -MemberType *Property | %{$vars.($_.Name) = $vg.variables.($_.Name)}
+                $vars.Remove("schemaChanged")
+                $methodParameters = @{
+                  id = $vg.id
+                  ProjectName = "$(System.TeamProject)"
+                  Name = "Release"
+                  Description = ""
+                  Type = "Vsts"
+                  Variables = $vars}
+                Update-VSTeamVariableGroup @methodParameters
 ######################################################################      
      
 - stage: 'Dev'
   displayName: 'Deploy to the dev environment'
-  dependsOn: DBAVerificationApply
-  # dependsOn: Build
-  # condition: |
-    # and
-    # (
-      # succeeded(),
-      # eq(variables['Build.SourceBranchName'], variables['releaseBranchName'])
-    # )
+  dependsOn:
+  - DBAVerificationScript
+  - DBAVerificationApply
+  condition: |
+    and
+    (
+      succeeded('DBAVerificationScript'),
+      in(dependencies.DBAVerificationApply.result, 'Succeeded', 'Skipped')
+    )
   jobs:
   - deployment: Deploy
     pool:
