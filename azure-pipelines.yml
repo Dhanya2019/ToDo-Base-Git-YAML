@@ -76,8 +76,11 @@ stages:
     - script: echo "Print Build.ArtifactStagingDirectory -> $(Build.ArtifactStagingDirectory)"
       displayName: 'Write build Artifacts'
       
-    - task: WhiteSource Bolt@21
-      displayName: 'Run WhiteSource Bolt'  
+    # - task: WhiteSource Bolt@21
+      # displayName: 'Run WhiteSource Bolt'
+      
+    - task: whitesource.whiteSource-bolt-v2.bolt.wss.WhiteSource@21
+      displayName: WhiteSource
       
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: drop'
